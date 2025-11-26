@@ -1,0 +1,1059 @@
+import React, { useState, useCallback, useEffect } from 'react';
+
+// --- Unicode Character Maps for Stylization (8 Styles) ---
+
+const STYLES = {
+  BOLD_SANS: {
+    name: '𝗕𝗼𝗹𝗱 𝗦𝗮𝗻𝘀 (Default)',
+    map: {
+      A: '𝗔', B: '𝗕', C: '𝗖', D: '𝗗', E: '𝗘', F: '𝗙', G: '𝗚', H: '𝗛', I: '𝗜', J: '𝗝', K: '𝗞', L: '𝗟', M: '𝗠', N: '𝗡', O: '𝗢', P: '𝗣', Q: '𝗤', R: '𝗥', S: '𝗦', T: '𝗧', U: '𝗨', V: '𝗩', W: '𝗪', X: '𝗫', Y: '𝗬', Z: '𝗭',
+      a: '𝗮', b: '𝗯', c: '𝗰', d: '𝗱', e: '𝗲', f: '𝗳', g: '𝗴', h: '𝗵', i: '𝗶', j: '𝗷', k: '𝗸', l: '𝗹', m: '𝗺', n: '𝗻', o: '𝗼', p: '𝗽', q: '𝗾', r: '𝗿', s: '𝘀', t: '𝘁', u: '𝘂', v: '𝘃', w: '𝘄', x: '𝘅', y: '𝘆', z: '𝘇',
+      '0': '𝟬', '1': '𝟭', '2': '𝟮', '3': '𝟯', '4': '𝟰', '5': '𝟱', '6': '𝟲', '7': '𝟳', '8': '𝟴', '9': '𝟵'
+    }
+  },
+  BOLD_SERIF: {
+    name: '𝐁𝐨𝐥𝐝 𝐒𝐞𝐫𝐢𝐟',
+    map: {
+      A: '𝐀', B: '𝐁', C: '𝐂', D: '𝐃', E: '𝐄', F: '𝐅', G: '𝐆', H: '𝐇', I: '𝐈', J: '𝐉', K: '𝐊', L: '𝐋', M: '𝐌', N: '𝐍', O: '𝐎', P: '𝐏', Q: '𝐐', R: '𝐑', S: '𝐒', T: '𝐓', U: '𝐔', V: '𝐕', W: '𝐖', X: '𝐗', Y: '𝐘', Z: '𝐙',
+      a: '𝐚', b: '𝐛', c: '𝐜', d: '𝐝', e: '𝐞', f: '𝐟', g: '𝐠', h: '𝐡', i: '𝐢', j: '𝐣', k: '𝐤', l: '𝐥', m: '𝐦', n: '𝐧', o: '𝐨', p: '𝐩', q: '𝐪', r: '𝐫', s: '𝐬', t: '𝐭', u: '𝐮', v: '𝐯', w: '𝐰', x: '𝐱', y: '𝐲', z: '𝐳',
+      '0': '𝟎', '1': '𝟏', '2': '𝟐', '3': '𝟑', '4': '𝟒', '5': '𝟓', '6': '𝟔', '7': '𝟕', '8': '𝟖', '9': '𝟗'
+    }
+  },
+  ITALIC_SERIF: {
+    name: '𝐼𝘵𝘢𝘭𝘪𝘤 𝑆𝑒𝑟𝑖𝘧',
+    map: {
+      A: '𝐴', B: '𝐵', C: '𝐶', D: '𝐷', E: '𝐸', F: '𝐹', G: '𝐺', H: '𝐻', I: '𝐼', J: '𝐽', K: '𝐾', L: '𝐿', M: '𝑀', N: '𝑁', O: '𝑂', P: '𝑃', Q: '𝑄', R: '𝑅', S: '𝑆', T: '𝑇', U: '𝑈', V: '𝑉', W: '𝑊', X: '𝑋', Y: '𝑌', Z: '𝑍',
+      a: '𝑎', b: '𝑏', c: '𝑐', d: '𝑑', e: '𝑒', f: '𝑓', g: '𝑔', h: 'ℎ', i: '𝑖', j: '𝑗', k: '𝑘', l: '𝑙', m: '𝑚', n: '𝑛', o: '𝑜', p: '𝑝', q: '𝑞', r: '𝑟', s: '𝑠', t: '𝑡', u: '𝑢', v: '𝑣', w: '𝑤', x: '𝑥', y: '𝑦', z: '𝑧',
+      '0': '0', '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9'
+    }
+  },
+  CURSIVE_SCRIPT: {
+    name: '𝒞𝓊𝓇𝓈𝒾𝓋𝑒 𝒮𝒸𝓇𝒾𝓅𝓉',
+    map: {
+      A: '𝓐', B: '𝓑', C: '𝓒', D: '𝓓', E: '𝓔', F: '𝓕', G: '𝓖', H: '𝓗', I: '𝓘', J: '𝓙', K: '𝓚', L: '𝓛', M: '𝓜', N: '𝓝', O: '𝓞', P: '𝓟', Q: '𝓠', R: '𝓡', S: '𝓢', T: '𝓣', U: '𝓤', V: '𝓥', W: '𝓦', X: '𝓧', Y: '𝓨', Z: '𝓩',
+      a: '𝓪', b: '𝓫', c: '𝓬', d: '𝓭', e: '𝓮', f: '𝓯', g: '𝓰', h: '𝓱', i: '𝓲', j: '𝓳', k: '𝓴', l: '𝓵', m: '𝓶', n: '𝓷', o: '𝓸', p: '𝓹', q: '𝓺', r: '𝓻', s: '𝓼', t: '𝓽', u: '𝓾', v: '𝓿', w: '𝔀', x: '𝔁', y: '𝔂', z: '𝔃',
+      '0': '0', '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9'
+    }
+  },
+  FRAKTUR: {
+    name: '𝔉𝔯𝔞𝔨𝔱𝔲𝔯 (Gothic)',
+    map: {
+      A: '𝔄', B: '𝔅', C: 'ℭ', D: '𝔇', E: '𝔈', F: '𝔉', G: '𝔊', H: 'ℌ', I: 'ℑ', J: '𝔍', K: '𝔎', L: '𝔏', M: '𝔐', N: '𝔑', O: '𝔒', P: '𝔓', Q: '𝔔', R: 'ℜ', S: '𝔖', T: '𝔗', U: '𝔘', V: '𝔙', W: '𝔚', X: '𝔛', Y: '𝔜', Z: 'ℨ',
+      a: '𝔞', b: '𝔟', c: '𝔠', d: '𝔡', e: '𝔢', f: '𝔣', g: '𝔤', h: '𝔥', i: '𝔦', j: '𝔧', k: '𝔨', l: '𝔩', m: '𝔪', n: '𝔫', o: '𝔬', p: '𝔭', q: '𝔮', r: '𝔯', s: '𝔰', t: '𝔱', u: '𝔲', v: '𝔳', w: '𝔴', x: '𝔵', y: '𝔶', z: '𝔷',
+      '0': '0', '1': '1', '2': '2', '3': '3', '4': '4', '5': '5', '6': '6', '7': '7', '8': '8', '9': '9'
+    }
+  },
+  FULLWIDTH: {
+    name: 'Ｆｕｌｌｗｉｄｔｈ',
+    map: {
+      A: 'Ａ', B: 'Ｂ', C: 'Ｃ', D: 'Ｄ', E: 'Ｅ', F: 'Ｆ', G: 'Ｇ', H: 'Ｈ', I: 'Ｉ', J: 'Ｊ', K: 'Ｋ', L: 'Ｌ', M: 'Ｍ', N: 'Ｎ', O: 'Ｏ', P: 'Ｐ', Q: 'Ｑ', R: 'Ｒ', S: 'Ｓ', T: 'Ｔ', U: 'Ｕ', V: 'Ｖ', W: 'Ｗ', X: 'Ｘ', Y: 'Ｙ', Z: 'Ｚ',
+      a: 'ａ', b: 'ｂ', c: 'ｃ', d: 'ｄ', e: 'ｅ', f: 'ｆ', g: 'ｇ', h: 'ｈ', i: 'ｉ', j: 'ｊ', k: 'ｋ', l: 'ｌ', m: 'ｍ', n: 'ｎ', o: 'ｏ', p: 'ｐ', q: 'ｑ', r: 'ｒ', s: 'ｓ', t: 'ｔ', u: 'ｕ', v: 'ｖ', w: 'ｗ', x: 'ｘ', y: 'ｙ', z: 'ｚ',
+      '0': '０', '1': '１', '2': '２', '3': '３', '4': '４', '5': '５', '6': '６', '7': '７', '8': '８', '9': '９'
+    }
+  },
+  SQUARED: {
+    name: '🅂🅀🅄🄰🅁🄴🄳',
+    map: {
+      A: '🄰', B: '🄱', C: '🄲', D: '🄳', E: '🄴', F: '🄵', G: '🄶', H: '🄷', I: '🄸', J: '🄹', K: '🄺', L: '🄻', M: '🄼', N: '🄽', O: '🄾', P: '🄿', Q: '🅀', R: '🅁', S: '🅂', T: '🅃', U: '🅄', V: '🅅', W: '🅆', X: '🅇', Y: '🅈', Z: '🅉',
+      a: '🄰', b: '🄱', c: '🄲', d: '🄳', e: '🄴', f: '🄵', g: '🄶', h: '🄷', i: '🄸', j: '🄹', k: '🄺', l: '🄻', m: '🄼', n: '🄽', o: '🄾', p: '🄿', q: '🅀', r: '🅁', s: '🅂', t: '🅃', u: '🅄', v: '🅅', w: '🅆', x: '🅇', y: '🅈', z: '🅉',
+      '0': '⓪', '1': '①', '2': '②', '3': '③', '4': '④', '5': '⑤', '6': '⑥', '7': '⑦', '8': '⑧', '9': '⑨'
+    }
+  },
+  BUBBLE_TEXT: {
+    name: '🅑🅤🅑🅑🅛🅔 🅣🅔🅧🅣',
+    map: {
+      A: '🅐', B: '🅑', C: '🅒', D: '🅓', E: '🅔', F: '🅕', G: '🅖', H: '🅗', I: '🅘', J: '🅙', K: '🅚', L: '🅛', M: '🅜', N: '🅝', O: '🅞', P: '🅟', Q: '🅠', R: '🅡', S: '🅢', T: '🅣', U: '🅤', V: '🅥', W: '🅦', X: '🅧', Y: '🅨', Z: '🅩',
+      a: 'ⓐ', b: 'ⓑ', c: 'ⓒ', d: 'ⓓ', e: 'ⓔ', f: 'ⓕ', g: 'ⓖ', h: 'ⓗ', i: 'ⓘ', j: 'ⓙ', k: 'ⓚ', l: 'ⓛ', m: 'ⓜ', n: 'ⓝ', o: 'ⓞ', p: 'ⓟ', q: 'ⓠ', r: 'ⓡ', s: 'ⓢ', t: 'ⓣ', u: 'ⓤ', v: 'ⓥ', w: 'ⓦ', x: 'ⓧ', y: 'ⓨ', z: 'ⓩ',
+      '0': '⓪', '1': '①', '2': '②', '3': '③', '4': '④', '5': '⑤', '6': '⑥', '7': '⑦', '8': '⑧', '9': '⑨'
+    }
+    },
+  INVERSE_BUBBLE: {
+    name: '🅵🅸🅻🅻🅴🅳 🅱🆄🅱🅱🅻🅴',
+    map: {
+      A: '🅐', B: '🅑', C: '🅒', D: '🅓', E: '🅔', F: '🅕', G: '🅖', H: '🅗', I: '🅘', J: '🅙', K: '🅚', L: '🅛', M: '🅜', N: '🅝', O: '🅞', P: '🅟', Q: '🅠', R: '🅡', S: '🅢', T: '🅣', U: '🅤', V: '🅥', W: '🅦', X: '🅧', Y: '🅨', Z: '🅩',
+      a: '🅰', b: '🅱', c: '🅲', d: '🅳', e: '🅴', f: '🅵', g: '🅶', h: '🅷', i: '🅸', j: '🅹', k: '🅺', l: '🅻', m: '🅼', n: '🅽', o: '🅾', p: '🅿', q: '🆀', r: '🆁', s: '🆂', t: '🆃', u: '🆄', v: '🆅', w: '🆆', x: '🆇', y: '🆈', z: '🆉',
+      '0': '⓪', '1': '①', '2': '②', '3': '③', '4': '④', '5': '⑤', '6': '⑥', '7': '⑦', '8': '⑧', '9': '⑨'
+    }
+  },
+};
+
+/**
+ * Converts normal ASCII text to a specific Unicode style based on a style map.
+ * @param {string} text - The input text.
+ * @param {Object} styleMap - The map containing Unicode character replacements.
+ * @returns {string} - The stylized text.
+ */
+const stylizeText = (text, styleMap) => {
+  let styledText = '';
+  if (!text) return ''; 
+  
+  for (const char of text) {
+    // Check for uppercase, then lowercase, then number in the map, otherwise use original char
+    styledText += styleMap[char.toUpperCase()] || styleMap[char.toLowerCase()] || styleMap[char] || char; 
+  }
+  return styledText;
+};
+
+// Default input values for a good starting demo
+const DEFAULT_INPUTS = {
+    title: 'Ateeq Mega Generator Official Release!',
+    introQuote: 'The fastest way to generate custom, high-impact social media posts.',
+    mainFeatures: 'Instant Copy-Paste Ready\n30 Unique Post Structures\n8 Unicode Font Styles\nFully Mobile Responsive',
+    link: 'https://www.downloadlink.com/app',
+    disclaimer: 'Always verify platform compatibility before posting.',
+    callToAction: 'Get your post generated now! Click the Copy button!',
+};
+
+// --- Structure Templates (30 distinct post structures) ---
+
+const STRUCTURE_TEMPLATES = {
+    // --- V1 Structures (1-10) ---
+    ORIGINAL_BOX: {
+        name: '01. Classic Box Frame',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `* 🌟 ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `🚀 ${style(inputs.title)} 💎\n\n`;
+            post += `> 📌 ${style(inputs.introQuote)}\n\n`;
+            post += `> 🔓 𝗡𝗘𝗪 𝗟𝗔𝗧𝗘𝗦𝗧 𝗢𝗙𝗙𝗘𝗥 𝗟𝗘𝗔𝗞𝗘𝗗\n\n`;
+            post += '┏━━━━━━━❖━━━━━━━━━\n';
+            post += `* ✅ ${style('100% RELIABLE')}\n`;
+            post += `* 📲 ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* 💡 ${style('INNOVATIVE NEW DESIGN')}\n`;
+            post += '┗━━━━━━━❖━━━━━━━━━\n\n';
+            post += '┏━━━━━━━❖━━━━━━━━━\n';
+            post += `> 🎯 𝗙𝗘𝗔𝗧𝗨𝗥𝗘𝗦: \n\n`;
+            post += styledFeatures + '\n';
+            post += '┗━━━━━━━❖━━━━━━━━━\n\n';
+            post += '┏━━━━━━━❖━━━━━━━━━\n';
+            post += `> ⚠️ 𝗡𝗢𝗧𝗘: \n`;
+            post += `                      ${style(inputs.disclaimer)}\n`;
+            post += '┗━━━━━━━❖━━━━━━━━━\n\n';
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `> ➤ ${style(inputs.callToAction)}\n\n`;
+            post += '> 𝗘𝗡𝗝𝗢𝗬 𝗔𝗡𝗗 𝗞𝗘𝗘𝗣 𝗦𝗨𝗣𝗣𝗢𝗥𝗧𝗜𝗡𝗚 ✨\n\n';
+            post += '> NEED 5⃣0⃣+SHARES FOR NEXT RELEASE';
+            return post;
+        }
+    },
+    ARROW_HEADER: {
+        name: '02. Arrow Header (Bold Separator)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `» ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `💥 ${style(inputs.title)} 💥\n`;
+            post += '»»———　　———««\n\n';
+            post += `> 👑 ${style(inputs.introQuote)}\n\n`;
+            post += '»»———　　———««\n';
+            post += '🔥 𝗞𝗘𝗬 𝗛𝗜𝗚𝗛𝗟𝗜𝗚𝗛𝗧𝗦:\n';
+            post += `* ${style('100% RELIABLE')}\n`;
+            post += `* ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += '— — — — — — — — —\n';
+            post += `📋 𝗙𝗨𝗟𝗟 𝗟𝗜𝗦𝗧:\n`;
+            post += styledFeatures + '\n\n';
+            post += `🔗 𝗟𝗜𝗡𝗞 𝗔𝗕𝗢𝗩𝗘 𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗 𝗛𝗘𝗥𝗘: ${inputs.link}\n\n`;
+            post += `> ⚠️ 𝗗𝗜𝗦𝗖𝗟𝗔𝗜𝗠𝗘𝗥: ${style(inputs.disclaimer)}\n\n`;
+            post += `✨ ${style(inputs.callToAction)} ✨`;
+            return post;
+        }
+    },
+    STAR_BAR: {
+        name: '03. Star Bar (Fancy Unicode)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `* ✦ ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `☆꧁ ${style(inputs.title)} ꧂☆\n\n`;
+            post += `📌 ${style(inputs.introQuote)}\n`;
+            post += '☆꧁— ———꧂☆\n\n';
+            post += `🎯 𝗙𝗜𝗫𝗘𝗗 𝗖𝗢𝗡𝗧𝗘𝗡𝗧:\n`;
+            post += `* ✅ ${style('100% RELIABLE')}\n`;
+            post += `* 📲 ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* 💡 ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += '✨ 𝗖𝗨𝗦𝗧𝗢𝗠 𝗙𝗘𝗔𝗧𝗨𝗥𝗘𝗦:\n';
+            post += styledFeatures + '\n\n';
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `> ${style(inputs.callToAction)} 🔥`;
+            return post;
+        }
+    },
+    FANCY_DIVIDER: {
+        name: '04. Fancy Divider (Lined)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `> ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `🌟 ${style(inputs.title)}\n`;
+            post += '°l||l°l||l°l||l°l||l°l||l°\n\n';
+            post += `📌 ${style(inputs.introQuote)}\n`;
+            post += '°l||l°l||l°l||l°l||l°l||l°\n\n';
+            post += `🎯 𝗖𝗢𝗡𝗧𝗘𝗡𝗧 𝗞𝗘𝗬:\n`;
+            post += `> ✅ ${style('100% RELIABLE')}\n`;
+            post += `> 📲 ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `> 💡 ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `📋 𝗖𝗨𝗦𝗧𝗢𝗠 𝗟𝗜𝗦𝗧:\n`;
+            post += styledFeatures + '\n\n';
+            post += `⚠️ 𝗗𝗜𝗦𝗖𝗟𝗔𝗜𝗠𝗘𝗥: ${style(inputs.disclaimer)}\n\n`;
+            post += `🔗 𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗 𝗛𝗘𝗥𝗘: ${inputs.link}\n\n`;
+            post += `➤ ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    TRIPLE_LINE: {
+        name: '05. Triple Line (Star Emojis)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `* ⭐ ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `═════ ⋆★⋆ ═════\n`;
+            post += `✨ ${style(inputs.title)} ✨\n`;
+            post += `═════ ⋆★⋆ ═════\n\n`;
+            post += `📢 ${style(inputs.introQuote)}\n\n`;
+            post += '━━━━━━━━━━━━━━━\n';
+            post += `⚙️ 𝗙𝗜𝗫𝗘𝗗 𝗕𝗘𝗡𝗘𝗙𝗜𝗧𝗦:\n`;
+            post += `* ${style('100% RELIABLE')}\n`;
+            post += `* ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `📝 𝗖𝗨𝗦𝗧𝗢𝗠 𝗙𝗘𝗔𝗧𝗨𝗥𝗘𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `⚠️ 𝗡𝗢𝗧𝗘: ${style(inputs.disclaimer)}\n\n`;
+            post += `🔥 ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    DOT_DASH: {
+        name: '06. Dot Dash (Cute Separator)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `> • ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `・‥...━━━☆☆━━━...‥・\n`;
+            post += `💖 ${style(inputs.title)}\n`;
+            post += `・‥...━━━☆☆━━━...‥・\n\n`;
+            post += `💬 ${style(inputs.introQuote)}\n\n`;
+            post +=`🌟 𝗧𝗢𝗣 𝗥𝗘𝗔𝗦𝗢𝗡𝗦:\n`;
+            post += `* ${style('100% RELIABLE')}\n`;
+            post += `* ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `📝 𝗗𝗘𝗧𝗔𝗜𝗟𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `🔥 ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    WAVE_BOX: {
+        name: '07. Wave Box (Minimalist)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `* 🌊 ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `╭┈─────── ೄྀ࿐ ˊˎ-\n`;
+            post += `|   ${style(inputs.title)}\n`;
+            post += `╰┈➤\n\n`;
+            post += `> 🗣️ ${style(inputs.introQuote)}\n\n`;
+            post += `╭┈─────── ೄྀ࿐ ˊˎ-\n`;
+            post += `| 𝗞𝗘𝗬 𝗣𝗢𝗜𝗡𝗧𝗦:\n`;
+            post += `* ${style('100% RELIABLE')}\n`;
+            post += `* ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ${style('INNOVATIVE NEW DESIGN')}\n`;
+            post += `╰┈➤\n\n`;
+            post += `📋 𝗔𝗗𝗗𝗜𝗧𝗜𝗢𝗡𝗔𝗟 𝗙𝗘𝗔𝗧𝗨𝗥𝗘𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `✨ ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    CHAIN_LINK: {
+        name: '08. Chain Link (Heavy Divider)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `* ⛓️ ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `⛓️⛓️⛓️ ━━━━━━━━━ ⛓️⛓️⛓️\n`;
+            post += `🚨 ${style(inputs.title)} 🚨\n`;
+            post += `⛓️⛓️⛓️ ━━━━━━━━━ ⛓️⛓️⛓️\n\n`;
+            post += `> 📣 ${style(inputs.introQuote)}\n\n`;
+            post += '— — — — — — — — —\n';
+            post += `✅ 𝗙𝗜𝗫𝗘𝗗 𝗩𝗔𝗟𝗨𝗘:\n`;
+            post += `* ${style('100% RELIABLE')}\n`;
+            post += `* ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `🧰 𝗖𝗨𝗦𝗧𝗢𝗠 𝗧𝗢𝗢𝗟𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `💥 ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    DIAMOND_LINE: {
+        name: '09. Diamond Line (Elegant)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `> 🔸 ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `🔸️•━━━━━━༻✦༺━━━━━━•🔸️\n`;
+            post += `✨ ${style(inputs.title)}\n`;
+            post += `🔸️•━━━━━━༻✦༺━━━━━━•🔸️\n\n`;
+            post += `🗣️ ${style(inputs.introQuote)}\n\n`;
+            post += '━━━━━━━━━━━━━━━━\n';
+            post += `💎 𝗞𝗘𝗬 𝗙𝗔𝗖𝗧𝗦:\n`;
+            post += `* ${style('100% RELIABLE')}\n`;
+            post += `* ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `📜 𝗔𝗗𝗗𝗜𝗧𝗜𝗢𝗡𝗔𝗟𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `🔥 ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    BOOK_ENDS: {
+        name: '10. Book Ends (Framed)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `* 📖 ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `╔═════ ≪ °❈° ≫ ═════╗\n`;
+            post += `  ${style(inputs.title)}\n`;
+            post += `╚═════ ≪ °❈° ≫ ═════╝\n\n`;
+            post += `> 📌 ${style(inputs.introQuote)}\n\n`;
+            post += `╔═════ ≪ °❈° ≫ ═════╗\n`;
+            post += ` 𝗞𝗘𝗬 𝗜𝗡𝗙𝗢:\n`;
+            post += `* ${style('100% RELIABLE')}\n`;
+            post += `* ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ${style('INNOVATIVE NEW DESIGN')}\n`;
+            post += `╚═════ ≪ °❈° ≫ ═════╝\n\n`;
+            post += `📋 𝗖𝗨𝗦𝗧𝗢𝗠 𝗟𝗜𝗦𝗧:\n`;
+            post += styledFeatures + '\n\n';
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `➤ ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+
+    // --- V2 Structures (11-30) ---
+    TRIPLE_BORDER: {
+        name: '11. Triple Border (Thick Line)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `* 📍 ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `██████████████████████████\n`;
+            post += `🚨 ${style(inputs.title)} 🚨\n`;
+            post += `██████████████████████████\n\n`;
+            post += `> 💬 ${style(inputs.introQuote)}\n\n`;
+            post += '▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬\n';
+            post += `📌 𝗙𝗜𝗫𝗘𝗗 𝗣𝗥𝗢𝗠𝗜𝗦𝗘:\n`;
+            post += `* ${style('100% RELIABLE')}\n`;
+            post += `* ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `📋 𝗪𝗛𝗔𝗧'𝗦 𝗜𝗡𝗖𝗟𝗨𝗗𝗘𝗗:\n`;
+            post += styledFeatures + '\n\n';
+            post += `⚠️ 𝗡𝗢𝗧𝗜𝗖𝗘: ${style(inputs.disclaimer)}\n\n`;
+            post += `🔗 𝗗𝗢𝗪𝗡𝗟𝗢𝗔𝗗: ${inputs.link}\n\n`;
+            post += `👉 ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    BRACKET_FUN: {
+        name: '12. Bracket Fun (Japanese Style)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `『🔹』 ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `【 ${style(inputs.title)} 】\n\n`;
+            post += `『 ${style(inputs.introQuote)} 』\n\n`;
+            post += '═══════ ≪ •❈• ≫ ═══════\n';
+            post += `[✅] ${style('100% RELIABLE')}\n`;
+            post += `[📲] ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `[💡] ${style('INNOVATIVE NEW DESIGN')}\n`;
+            post += '═══════ ≪ •❈• ≫ ═══════\n\n';
+            post += `📌 𝗖𝗨𝗦𝗧𝗢𝗠 𝗟𝗜𝗦𝗧:\n`;
+            post += styledFeatures + '\n\n';
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `🔥 ${style(inputs.callToAction)} 🔥`;
+            return post;
+        }
+    },
+    FOUR_CORNERS: {
+        name: '13. Four Corners (Boxed)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `> 🎯 ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `┏━━━┓ ${style(inputs.title)} ┏━━━┓\n`;
+            post += `┃ 📌 ┃ ${style(inputs.introQuote)} ┃ 👑 ┃\n`;
+            post += `┗━━━┛ ━━━━━━━━━━ ┗━━━┛\n\n`;
+            post += `🔥 𝗩𝗔𝗟𝗨𝗘 𝗣𝗥𝗢𝗣𝗢𝗦𝗜𝗧𝗜𝗢𝗡:\n`;
+            post += `* ✅ ${style('100% RELIABLE')}\n`;
+            post += `* 📲 ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* 💡 ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `📋 𝗗𝗘𝗧𝗔𝗜𝗟𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `⚠️ 𝗗𝗜𝗦𝗖𝗟𝗔𝗜𝗠𝗘𝗥: ${style(inputs.disclaimer)}\n`;
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `👉 ${style(inputs.callToAction)} 🚀`;
+            return post;
+        }
+    },
+    VERTICAL_FOCUS: {
+        name: '14. Vertical Focus (Columnar)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `|  ⚡ ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `━━━━━━━━━━━━━━━━━━\n`;
+            post += `| ✨ ${style(inputs.title)}\n`;
+            post += `| 💬 ${style(inputs.introQuote)}\n`;
+            post += `━━━━━━━━━━━━━━━━━━\n\n`;
+            post += `| ✅ ${style('100% RELIABLE')}\n`;
+            post += `| 📲 ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `| 💡 ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `| 𝗔𝗗𝗗𝗜𝗧𝗜𝗢𝗡𝗔𝗟 𝗙𝗘𝗔𝗧𝗨𝗥𝗘𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `| ⚠️ ${style(inputs.disclaimer)}\n`;
+            post += `| 🔗 ${inputs.link}\n`;
+            post += `━━━━━━━━━━━━━━━━━━\n`;
+            post += `| 🔥 ${style(inputs.callToAction)}`;
+            return post;
+  }
+    },
+    HANGING_INDENT: {
+        name: '15. Hanging Indent (Clean List)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `➤ ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `📢 ${style(inputs.title)} | ${style('OFFICIAL')}\n`;
+            post += `---------------------------------\n\n`;
+            post += `> 💬 𝗜𝗡𝗧𝗥𝗢: ${style(inputs.introQuote)}\n\n`;
+            post += `📌 𝗪𝗛𝗬 𝗨𝗦𝗘 𝗜𝗧:\n`;
+            post += `✅ 100% RELIABLE\n`;
+            post += `📲 SUPPORTS ALL DEVICES\n`;
+            post += `💡 INNOVATIVE NEW DESIGN\n\n`;
+            post += `🛠️ 𝗙𝗨𝗟𝗟 𝗙𝗘𝗔𝗧𝗨𝗥𝗘 𝗟𝗜𝗦𝗧:\n`;
+            post += styledFeatures + '\n\n';
+            post += `⚠️ 𝗗𝗜𝗦𝗖𝗟𝗔𝗜𝗠𝗘𝗥: ${style(inputs.disclaimer)}\n\n`;
+            post += `🔗 ${inputs.link}\n\n`;
+            post += `🔥 ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    FLORAL_FRAME: {
+        name: '16. Floral Frame (Nature Theme)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `* 🌸 ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `🌿❀~✿~❀~✿~❀~✿~❀~✿~❀~✿~❀🌿\n`;
+            post += `  👑 ${style(inputs.title)} 👑\n`;
+            post += `🌿❀~✿~❀~✿~❀~✿~❀~✿~❀~✿~❀🌿\n\n`;
+            post += `💬 ${style(inputs.introQuote)}\n\n`;
+            post += `✨ 𝗕𝗘𝗡𝗘𝗙𝗜𝗧𝗦:\n`;
+            post += `* ✅ ${style('100% RELIABLE')}\n`;
+            post += `* 📲 ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* 💡 ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `🌱 𝗔𝗗𝗗𝗘𝗗 𝗚𝗢𝗢𝗗𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `💖 ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    CODE_BLOCK_STYLE: {
+        name: '17. Code Block Style',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `> $ ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `\`\`\`css\n`;
+            post += `[TITLE] => ${style(inputs.title)}\n`;
+            post += `[QUOTE] => ${style(inputs.introQuote)}\n`;
+            post += `\`\`\`\n\n`;
+            post += `// Core Logic\n`;
+            post += `> STATUS: ${style('100% RELIABLE')}\n`;
+            post += `> DEVICES: ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `> VERSION: ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `// Custom Features\n`;
+            post += styledFeatures + '\n\n';
+            post += `\`\`\`javascript\n`;
+            post += `// Link and Action\n`;
+            post += `const link = "${inputs.link}";\n`;
+            post += `const action = "${style(inputs.callToAction)}";\n`;
+            post += `// Disclaimer: ${style(inputs.disclaimer)}\n`;
+            post += `\`\`\``;
+            return post;
+        }
+    },
+    DOUBLE_ARROW_HEAD: {
+        name: '18. Double Arrow Head',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `⋙ ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `⋘════════════════════⋙\n`;
+            post += `  👑 ${style(inputs.title)} 👑\n`;
+            post += `⋘════════════════════⋙\n\n`;
+            post += `💬 ${style(inputs.introQuote)}\n\n`;
+            post += `✅ 𝗖𝗢𝗡𝗙𝗜𝗥𝗠𝗘𝗗:\n`;
+            post += `⋙ ${style('100% RELIABLE')}\n`;
+            post += `⋙ ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `⋙ ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `💡 𝗔𝗗𝗗𝗜𝗧𝗜𝗢𝗡𝗔𝗟𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `💥 ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    MUSIC_NOTE_THEME: {
+        name: '19. Music Note Theme',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `* 🎶 ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `🎵🎶 ${style(inputs.title)} 🎶🎵\n\n`;
+            post += `>> ${style(inputs.introQuote)} <<\n\n`;
+            post += `🎧 𝗣𝗟𝗔𝗬𝗟𝗜𝗦𝗧:\n`;
+            post += `* ✅ ${style('100% RELIABLE')}\n`;
+            post += `* 📲 ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* 💡 ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `🎼 𝗧𝗥𝗔𝗖𝗞 𝗟𝗜𝗦𝗧:\n`;
+            post += styledFeatures + '\n\n';
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `🎤 ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    SCROLL_FRAME: {
+        name: '20. Scroll Frame (Old Paper)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `📜 ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `📜═════ ≪ °📜° ≫ ═════📜\n`;
+            post += `  ${style(inputs.title)}\n`;
+            post += `📜═════ ≪ °📜° ≫ ═════📜\n\n`;
+            post += `> 🖋️ ${style(inputs.introQuote)}\n\n`;
+            post += `✅ 𝗔𝗨𝗧𝗛𝗢𝗥𝗜𝗭𝗘𝗗 𝗩𝗘𝗥𝗦𝗜𝗢𝗡:\n`;
+            post += `* ${style('100% RELIABLE')}\n`;
+            post += `* ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `📌 𝗗𝗢𝗖𝗨𝗠𝗘𝗡𝗧 𝗙𝗘𝗔𝗧𝗨𝗥𝗘𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `🔗 𝗖𝗟𝗔𝗜𝗠 𝗛𝗘𝗥𝗘: ${inputs.link}\n\n`;
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `🔥 ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    HEART_LINE: {
+        name: '21. Heart Line (Engagement Focus)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `❤️ ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `━━━━━━━༺💖༻━━━━━━━\n`;
+            post += `  ${style(inputs.title)}\n`;
+            post += `━━━━━━━༺💖༻━━━━━━━\n\n`;
+            post += `✨ ${style(inputs.introQuote)}\n\n`;
+            post += `✅ 𝗪𝗛𝗔𝗧 𝗬𝗢𝗨'𝗟𝗟 𝗟𝗢𝗩𝗘:\n`;
+            post += `* ${style('100% RELIABLE')}\n`;
+            post += `* ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `💖 𝗘𝗫𝗧𝗥𝗔 𝗕𝗢𝗡𝗨𝗦𝗘𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `➡️ ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    INFINITY_BOX: {
+        name: '22. Infinity Box (Continuous Value)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `∞ ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `∞━━━━━━🔲━━━━━━∞\n`;
+            post += `  ${style(inputs.title)}\n`;
+            post += `∞━━━━━━🔲━━━━━━∞\n\n`;
+            post += `💬 ${style(inputs.introQuote)}\n\n`;
+            post += `⚙️ 𝗙𝗢𝗥𝗘𝗩𝗘𝗥 𝗙𝗘𝗔𝗧𝗨𝗥𝗘𝗦:\n`;
+            post += `* ✅ ${style('100% RELIABLE')}\n`;
+            post += `* 📲 ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* 💡 ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `♾️ 𝗖𝗨𝗦𝗧𝗢𝗠 𝗨𝗣𝗚𝗥𝗔𝗗𝗘𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `⚡ ${style(inputs.callToAction)}`;
+            return post;
+}
+    },
+    GRADIENT_BAR: {
+        name: '23. Gradient Bar (Shade Blocks)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `* ▒ ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `█▓▒░ ${style(inputs.title)} ░▒▓█\n\n`;
+            post += `> 🗣️ ${style(inputs.introQuote)}\n\n`;
+            post += `--- ▒ 𝗞𝗘𝗬 𝗣𝗢𝗜𝗡𝗧𝗦 ▒ ---\n`;
+            post += `* ${style('100% RELIABLE')}\n`;
+            post += `* ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `--- ▓ 𝗔𝗗𝗗𝗜𝗧𝗜𝗢𝗡𝗔𝗟𝗦 ▓ ---\n`;
+            post += styledFeatures + '\n\n';
+            post += `⚠️ 𝗗𝗜𝗦𝗖𝗟𝗔𝗜𝗠𝗘𝗥: ${style(inputs.disclaimer)}\n\n`;
+            post += `🔗 ${inputs.link}\n\n`;
+            post += `🔥 ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    CALLOUT_QUOTE: {
+        name: '24. Callout Quote (Big Intro)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `* 🎁 ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `╔═════ ≪ °📢° ≫ ═════╗\n`;
+            post += `  ${style(inputs.title)}\n`;
+            post += `╚═════ ≪ °📢° ≫ ═════╝\n\n`;
+            post += `>>> ${style(inputs.introQuote.toUpperCase())} <<<\n\n`;
+            post += `✅ 𝗚𝗨𝗔𝗥𝗔𝗡𝗧𝗘𝗘𝗗 𝗕𝗔𝗦𝗜𝗖𝗦:\n`;
+            post += `* ${style('100% RELIABLE')}\n`;
+            post += `* ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `📋 𝗖𝗨𝗦𝗧𝗢𝗠 𝗕𝗢𝗡𝗨𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `➡️ ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    GRID_LIST: {
+        name: '25. Grid List (Structured)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `[#] ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `🔲🔳🔲 ${style(inputs.title)} 🔲🔳🔲\n\n`;
+            post += `>> ${style(inputs.introQuote)}\n\n`;
+            post += `✅ 𝗖𝗢𝗥𝗘 𝗦𝗣𝗘𝗖𝗦:\n`;
+            post += `* 🌐 ${style('100% RELIABLE')}\n`;
+            post += `* 📱 ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ⚙️ ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `📋 𝗚𝗥𝗜𝗗 𝗜𝗧𝗘𝗠𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `🚀 ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    CLOCKWORK_DESIGN: {
+        name: '26. Clockwork Design (Gears)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `⚙️ ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `⚙️⚙️ ${style(inputs.title)} ⚙️⚙️\n`;
+            post += '--- 🔩 -------------------- 🔩 ---\n\n';
+            post += `🕰️ ${style(inputs.introQuote)}\n\n`;
+            post += `✅ 𝗔𝗨𝗧𝗢𝗠𝗔𝗧𝗘𝗗 𝗩𝗔𝗟𝗨𝗘:\n`;
+            post += `* ${style('100% RELIABLE')}\n`;
+            post += `* ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `🔧 𝗖𝗨𝗦𝗧𝗢𝗠 𝗖𝗢𝗠𝗣𝗢𝗡𝗘𝗡𝗧𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `🔥 ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    SIMPLE_BLOCK_QUOTES: {
+        name: '27. Simple Block Quotes',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `> » ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `📌 ${style(inputs.title)}\n`;
+            post += `\n> ${style(inputs.introQuote.toUpperCase())}\n\n`;
+            post += '--- \n';
+            post += `> ✅ ${style('100% RELIABLE')}\n`;
+            post += `> 📲 ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `> 💡 ${style('INNOVATIVE NEW DESIGN')}\n`;
+            post += '--- \n\n';
+            post += `⚙️ 𝗙𝗘𝗔𝗧𝗨𝗥𝗘𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `⚠️ 𝗡𝗢𝗧𝗘: ${style(inputs.disclaimer)}\n\n`;
+            post += `🔗 𝗟𝗜𝗡𝗞: ${inputs.link}\n\n`;
+            post += `👉 ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    ROADMAP_STRUCTURE: {
+        name: '28. Roadmap Structure (Arrows)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `🛣️ ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `⬆️ ${style(inputs.title)} ⬆️\n`;
+            post += '--------------- \n\n';
+            post += `🗺️ 𝗦𝗧𝗔𝗥𝗧𝗜𝗡𝗚 𝗣𝗢𝗜𝗡𝗧: ${style(inputs.introQuote)}\n\n`;
+            post += `✅ 𝗣𝗔𝗧𝗛 𝗖𝗟𝗘𝗔𝗥:\n`;
+            post += `* ${style('100% RELIABLE')}\n`;
+            post += `* ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `➡️ 𝗠𝗜𝗟𝗘𝗦𝗧𝗢𝗡𝗘𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `🔗 𝗙𝗜𝗡𝗔𝗟 𝗗𝗘𝗦𝗧𝗜𝗡𝗔𝗧𝗜𝗢𝗡: ${inputs.link}\n\n`;
+            post += `🚀 ${style(inputs.callToAction)}`;
+            return post;
+        }
+    },
+    KEY_LOCK_STRUCTURE: {
+        name: '29. Key/Lock Structure (Exclusive)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `🔑 ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `🔐 ${style(inputs.title)} 🔑\n`;
+            post += '---------------------------------\n\n';
+            post += `> 🔓 𝗘𝗫𝗖𝗟𝗨𝗦𝗜𝗩𝗘 𝗜𝗡𝗙𝗢: ${style(inputs.introQuote)}\n\n`;
+            post += `✅ 𝗞𝗘𝗬 𝗔𝗖𝗖𝗘𝗦𝗦:\n`;
+            post += `* ${style('100% RELIABLE')}\n`;
+            post += `* ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `🗝️ 𝗚𝗘𝗧 𝗧𝗛𝗘𝗦𝗘:\n`;
+            post += styledFeatures + '\n\n';
+            post += `🔗 𝗚𝗘𝗧 𝗧𝗛𝗘 𝗞𝗘𝗬: ${inputs.link}\n\n`;
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `🔥 ${style(inputs.callToAction)} - 𝗗𝗢𝗡'𝗧 𝗠𝗜𝗦𝗦 𝗢𝗨𝗧!`;
+            return post;
+        }
+    },
+    GIFT_BOX: {
+        name: '30. Gift Box (Bonus Theme)',
+        generate: (inputs, style) => {
+            const featureLines = inputs.mainFeatures.split('\n').filter(line => line.trim() !== '');
+            const styledFeatures = featureLines.map(line => `🎁 ${style(line.trim())}`).join('\n');
+            
+            let post = '';
+            post += `🎀🎁 ${style(inputs.title)} 🎁🎀\n`;
+            post += '=================================\n\n';
+            post += `🎉 𝗦𝗨𝗥𝗣𝗥𝗜𝗦𝗘! ${style(inputs.introQuote)}\n\n`;
+            post += `✅ 𝗪𝗛𝗔𝗧'𝗦 𝗜𝗡𝗦𝗜𝗗𝗘:\n`;
+            post += `* ${style('100% RELIABLE')}\n`;
+            post += `* ${style('SUPPORTS ALL DEVICES')}\n`;
+            post += `* ${style('INNOVATIVE NEW DESIGN')}\n\n`;
+            post += `🎁 𝗘𝗫𝗧𝗥𝗔 𝗣𝗥𝗘𝗦𝗘𝗡𝗧𝗦:\n`;
+            post += styledFeatures + '\n\n';
+            post += `⚠️ ${style(inputs.disclaimer)}\n\n`;
+            post += `🔗 𝗨𝗡𝗪𝗥𝗔𝗣 𝗛𝗘𝗥𝗘: ${inputs.link}\n\n`;
+            post += `🎊 ${style(inputs.callToAction)}`;
+            return post;
+        }
+    }
+};
+
+const STRUCTURE_OPTIONS = Object.keys(STRUCTURE_TEMPLATES).map(key => ({
+    key,
+    name: STRUCTURE_TEMPLATES[key].name
+}));
+
+const STYLE_OPTIONS = Object.keys(STYLES).map(key => ({
+    key,
+    name: STYLES[key].name
+}));
+
+const App = () => {
+    // State for user inputs
+    const [inputs, setInputs] = useState(DEFAULT_INPUTS);
+    
+    // State for selection
+    const [selectedStyleKey, setSelectedStyleKey] = useState('BOLD_SANS');
+    const [selectedStructureKey, setSelectedStructureKey] = useState('ORIGINAL_BOX');
+
+    // State for output and copy status
+    const [generatedPost, setGeneratedPost] = useState('');
+    const [isCopied, setIsCopied] = useState(false);
+    
+    // Get the current style map and generator function
+    const currentStyle = STYLES[selectedStyleKey];
+    const currentStructure = STRUCTURE_TEMPLATES[selectedStructureKey];
+     // Helper function to handle text styling based on selection
+    const styleFunction = useCallback((text) => stylizeText(text, currentStyle.map), [currentStyle.map]);
+
+    // Effect to auto-generate post whenever inputs, style, or structure change
+    useEffect(() => {
+        if (currentStructure && currentStructure.generate) {
+            setGeneratedPost(currentStructure.generate(inputs, styleFunction));
+        }
+    }, [inputs, selectedStyleKey, selectedStructureKey, styleFunction, currentStructure]);
+
+    // Handle input changes
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setInputs(prev => ({ ...prev, [name]: value }));
+    };
+
+    // Handle copy to clipboard
+    const copyToClipboard = () => {
+        // Use document.execCommand('copy') for better iframe compatibility
+        const textArea = document.createElement('textarea');
+        textArea.value = generatedPost;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2000); // Reset copy status after 2 seconds
+        } catch (err) {
+            console.error('Could not copy text: ', err);
+            // Fallback for failed copy (optional: show a message)
+        }
+        document.body.removeChild(textArea);
+    };
+
+    // Style for the container and inputs
+    const inputClasses = "w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out";
+    const labelClasses = "block text-sm font-medium text-gray-300 mb-1";
+    const buttonClasses = "w-full py-3 rounded-xl font-bold transition duration-300 ease-in-out shadow-lg";
+
+    return (
+        <div className="min-h-screen bg-gray-900 text-white p-4 sm:p-8">
+            <header className="text-center mb-10">
+                <h1 className="text-4xl sm:text-5xl font-extrabold text-indigo-400 mb-2">
+                    Ateeq Mega Post Generator
+                </h1>
+                <p className="text-indigo-300 text-lg">
+                    Generate 30+ unique, stylized, copy-paste ready social media posts.
+                </p>
+            </header>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                {/* --- COLUMN 1: Settings & Styles --- */}
+                <div className="bg-gray-800 p-6 rounded-2xl shadow-xl space-y-6 lg:col-span-1">
+                    <h2 className="text-2xl font-semibold mb-4 border-b border-gray-700 pb-2 text-indigo-400">
+                        1. Select Style & Structure
+                    </h2>
+                    
+                    {/* Style Selector */}
+                    <div>
+                        <label htmlFor="styleSelector" className={labelClasses}>
+                            🌐 Unicode Text Style (8 Options)
+                        </label>
+                        <select
+                            id="styleSelector"
+                            value={selectedStyleKey}
+                            onChange={(e) => setSelectedStyleKey(e.target.value)}
+                            className={inputClasses}
+                        >
+                            {STYLE_OPTIONS.map(opt => (
+                                <option key={opt.key} value={opt.key}>
+                                    {opt.name}
+                                </option>
+                            ))}
+                        </select>
+                        <p className="text-xs text-gray-400 mt-1">
+                            Applies unique Unicode letters to all customizable text.
+                        </p>
+                    </div>
+
+                    {/* Structure Selector */}
+                    <div>
+                        <label htmlFor="structureSelector" className={labelClasses}>
+                            🏗️ Post Structure (30 Options)
+                        </label>
+                        <select
+                            id="structureSelector"
+                            value={selectedStructureKey}
+                            onChange={(e) => setSelectedStructureKey(e.target.value)}
+                            className={inputClasses}
+                        >
+                            {STRUCTURE_OPTIONS.map(opt => (
+                                <option key={opt.key} value={opt.key}>
+                                    {opt.name}
+                                </option>
+                            ))}
+                        </select>
+                        <p className="text-xs text-gray-400 mt-1">
+                            Sets the emoji, divider, and layout pattern.
+                        </p>
+                    </div>
+                </div>
+
+                {/* --- COLUMN 2: Input Customization --- */}
+                <div className="bg-gray-800 p-6 rounded-2xl shadow-xl space-y-6 lg:col-span-1">
+                    <h2 className="text-2xl font-semibold mb-4 border-b border-gray-700 pb-2 text-indigo-400">
+                        2. Customize Your Content
+                    </h2>
+
+                    {/* Title */}
+                    <div>
+                        <label htmlFor="title" className={labelClasses}>🌟 Post Title / Main Headline</label>
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            value={inputs.title}
+                            onChange={handleInputChange}
+                            className={inputClasses}
+                            placeholder="Enter your main title here"
+                        />
+                    </div>
+
+                    {/* Intro Quote */}
+                    <div>
+                        <label htmlFor="introQuote" className={labelClasses}>💬 Introductory Quote / Hook</label>
+                        <textarea
+                            id="introQuote"
+                            name="introQuote"
+                            rows="2"
+                            value={inputs.introQuote}
+                            onChange={handleInputChange}
+                            className={inputClasses}
+                            placeholder="A short, catchy line to introduce the post"
+                        ></textarea>
+                    </div>
+                    
+                    {/* Main Features */}
+                    <div>
+                        <label htmlFor="mainFeatures" className={labelClasses}>📋 Key Features / List Items (One per line)</label>
+                        <textarea
+                            id="mainFeatures"
+                            name="mainFeatures"
+                            rows="4"
+                            value={inputs.mainFeatures}
+                            onChange={handleInputChange}
+                            className={inputClasses}
+                            placeholder="Enter features/points, one per line."
+                        ></textarea>
+                    </div>
+
+                    {/* Link */}
+                    <div>
+                        <label htmlFor="link" className={labelClasses}>🔗 Call-to-Action Link / URL</label>
+                        <input
+                            type="url"
+                            id="link"
+                            name="link"
+                            value={inputs.link}
+                            onChange={handleInputChange}
+                            className={inputClasses}
+                            placeholder="https://yourlink.com"
+                        />
+                    </div>
+
+                    {/* Disclaimer */}
+                    <div>
+                        <label htmlFor="disclaimer" className={labelClasses}>⚠️ Small Disclaimer / Note</label>
+                        <input
+                            type="text"
+                            id="disclaimer"
+                            name="disclaimer"
+                            value={inputs.disclaimer}
+                            onChange={handleInputChange}
+                            className={inputClasses}
+                            placeholder="e.g., Use at your own risk."
+                        />
+                    </div>
+
+                    {/* Call to Action */}
+                    <div>
+                        <label htmlFor="callToAction" className={labelClasses}>🚀 Final Call To Action</label>
+                        <input
+                            type="text"
+                            id="callToAction"
+                            name="callToAction"
+                            value={inputs.callToAction}
+                            onChange={handleInputChange}
+                            className={inputClasses}
+                            placeholder="e.g., DOWNLOAD NOW!"
+                        />
+                    </div>
+                </div>
+
+                {/* --- COLUMN 3: Output --- */}
+                <div className="lg:col-span-1">
+                    <div className="bg-gray-800 p-6 rounded-2xl shadow-xl h-full flex flex-col">
+<pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-gray-100">
+                                {generatedPost || "Post will appear here after entering content..."}
+                            </pre>
+                        </div>
+                        
+                        <button
+                            onClick={copyToClipboard}
+                            className={`${buttonClasses} ${isCopied ? 'bg-green-600 hover:bg-green-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                        >
+                            {isCopied ? (
+                                <span className="flex items-center justify-center">
+                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    COPIED!
+                                </span>
+                            ) : (
+                                <span className="flex items-center justify-center">
+                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+                                    COPY POST
+                                </span>
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default App;
+
